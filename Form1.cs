@@ -1,28 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Threading;
+using System.Media;
+using System.IO;
 
 namespace The_Lottery_Machine
 {
     public partial class Form1 : Form
     {
+        bool autoResetPicks = false;
         bool autoReset = false;
         byte picks;
         byte draw;
+        bool soundEnabled = false;
+        int timesPlayed = 0;
+        int timesWon = 0;
 
         Random random = new Random();
+        DateTime dt = new DateTime();
+        SoundPlayer lossSound = new SoundPlayer("lossSound.wav");
+        SoundPlayer winSound = new SoundPlayer("winSound.wav");
 
         public Form1()
         {
             InitializeComponent();
             initButtonColors();
+            getSave();
         }
 
         void initButtonColors()
@@ -50,14 +53,17 @@ namespace The_Lottery_Machine
 
         void resetColors()
         {
-            pickOne.BackColor = Color.SlateGray;
-            pickTwo.BackColor = Color.SlateGray;
-            pickThree.BackColor = Color.SlateGray;
-            pickFour.BackColor = Color.SlateGray;
-            pickFive.BackColor = Color.SlateGray;
-            pickSix.BackColor = Color.SlateGray;
-            pickSeven.BackColor = Color.SlateGray;
-            pickEight.BackColor = Color.SlateGray;
+            if (autoResetPicks)
+            {
+                pickOne.BackColor = Color.SlateGray;
+                pickTwo.BackColor = Color.SlateGray;
+                pickThree.BackColor = Color.SlateGray;
+                pickFour.BackColor = Color.SlateGray;
+                pickFive.BackColor = Color.SlateGray;
+                pickSix.BackColor = Color.SlateGray;
+                pickSeven.BackColor = Color.SlateGray;
+                pickEight.BackColor = Color.SlateGray;
+            }
             drawOne.BackColor = Color.SlateGray;
             drawTwo.BackColor = Color.SlateGray;
             drawThree.BackColor = Color.SlateGray;
@@ -67,15 +73,20 @@ namespace The_Lottery_Machine
             drawSeven.BackColor = Color.SlateGray;
             drawEight.BackColor = Color.SlateGray;
             playButton.BackColor = Color.SlateGray;
-            autoResetButton.BackColor = Color.SlateGray;
         }
 
         private void playButton_Click(object sender, EventArgs e)
         {
+            timesPlayed++;
+            timesPlayedLabel.Text = timesPlayed.ToString();
+            soundEnabled = soundCheckBox.Checked;
+            autoResetPicks = autoResetPicksCheckBox.Checked;
             playButton.BackColor = Color.OrangeRed;
             disableButtons();
             draw = (byte)random.Next(0, 255);
             setDrawColors();
+            drawIntegerLabel.Text = draw.ToString();
+            picksIntegerLabel.Text = picks.ToString();
             if(draw == picks)
             {
                 winScenario();
@@ -88,6 +99,11 @@ namespace The_Lottery_Machine
 
         private void winScenario()
         {
+            timesWon++;
+            timesWonLabel.Text = timesWon.ToString();
+            if(soundEnabled) winSound.Play();
+            dt = DateTime.Now;
+            lastWinLabel.Text = dt.ToString();
             string caption = "Winner!";
             string message = "You won the lottery!";
             MessageBoxButtons buttons = MessageBoxButtons.OK;
@@ -98,6 +114,7 @@ namespace The_Lottery_Machine
 
         private void loseScenario()
         {
+            if(soundEnabled) lossSound.Play();
             string caption = "You lose...";
             string message = "You've lost :/. Try again!";
             MessageBoxButtons buttons = MessageBoxButtons.YesNo;
@@ -110,7 +127,6 @@ namespace The_Lottery_Machine
         private void disableButtons()
         {
             playButton.Enabled = false;
-            autoResetButton.Enabled = false;
             pickOne.Enabled = false;
             pickTwo.Enabled = false;
             pickThree.Enabled = false;
@@ -119,12 +135,12 @@ namespace The_Lottery_Machine
             pickSix.Enabled = false;
             pickSeven.Enabled = false;
             pickEight.Enabled = false;
+            autoResetButton.Enabled = false;
         }
 
         private void enableButtons()
         {
             playButton.Enabled = true;
-            autoResetButton.Enabled = true;
             pickOne.Enabled = true;
             pickTwo.Enabled = true;
             pickThree.Enabled = true;
@@ -133,6 +149,7 @@ namespace The_Lottery_Machine
             pickSix.Enabled = true;
             pickSeven.Enabled = true;
             pickEight.Enabled = true;
+            autoResetButton.Enabled = true;
         }
 
         private void pickOne_Click(object sender, EventArgs e)
@@ -261,6 +278,7 @@ namespace The_Lottery_Machine
 
         private void resetButton_Click(object sender, EventArgs e)
         {
+            autoReset = false;
             reset();
         }
 
@@ -279,11 +297,77 @@ namespace The_Lottery_Machine
         private void reset()
         {
             disableButtons();
-            autoReset = false;
             draw = 0;
-            picks = 0;
+            if (autoResetPicks) picks = 0;
             resetColors();
             enableButtons();
+        }
+
+        private void getSave()
+        {
+            try
+            {
+                StreamReader sr = new StreamReader("save.txt");    
+                string[] linesArray = new string[6];
+                string temp1 = "";
+                for (int i = 0; i < 6; i++)
+                {
+                    linesArray[i] = sr.ReadLine();
+                    //string temp = linesArray[i].Substring(linesArray[i].IndexOf("="), linesArray[i].Length);
+                    temp1 = linesArray[i].Substring(linesArray[i].IndexOf("= "));
+                    temp1 = temp1.Substring(temp1.IndexOf(" "));
+                    if (i == 0) if (temp1 == "True") soundEnabled = true;
+                    else soundEnabled = false;
+                    if (i == 1) if (temp1 == "True") autoResetPicks = true;
+                        else autoResetPicks = false;
+                    if (i == 3) timesPlayed = Int32.Parse(temp1);
+                    if (i == 4) timesWon = Int32.Parse(temp1);
+                    if (i == 5) lastWinLabel.Text = temp1;
+                }
+                MessageBoxButtons buttons = MessageBoxButtons.OK;
+                MessageBox.Show("Save Successfully fetched! ", "Save", buttons);
+                sr.Close();
+            }
+            catch (Exception err)
+            {
+                string caption = "An Error Has Occured Fetching Save";
+                string message = err.Message;
+                MessageBoxButtons buttons = MessageBoxButtons.OK;
+                MessageBox.Show(message, caption, buttons);
+                throw;
+            }
+            finally
+            {
+                
+            }
+            timesPlayedLabel.Text = timesPlayed.ToString();
+            timesWonLabel.Text = timesWon.ToString();
+            soundCheckBox.Checked = soundEnabled;
+            autoResetPicksCheckBox.Checked = autoResetPicks;
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            try
+            {
+                StreamWriter sw = new StreamWriter("save.txt");
+                sw.WriteLine("SoundEnbaled = " + soundCheckBox.Enabled);
+                sw.WriteLine("Auto-ResetPicks = " + autoResetPicksCheckBox.Enabled);
+                sw.WriteLine("Auto-Reset = " + autoReset);
+                sw.WriteLine("TimesPlayed = " + timesPlayed.ToString());
+                sw.WriteLine("TimesWon = " + timesWon.ToString());
+                sw.WriteLine("LastWin = " + dt.ToString());
+                sw.Close();
+            }
+            catch (Exception err)
+            {
+                string caption = "An Error Has Occured Trying to Save";
+                string message = err.Message;
+                MessageBoxButtons buttons = MessageBoxButtons.OK;
+                MessageBox.Show(message, caption, buttons);
+                throw;
+            }
         }
     }
 
