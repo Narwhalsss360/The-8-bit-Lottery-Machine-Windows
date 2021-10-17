@@ -84,7 +84,8 @@ namespace The_Lottery_Machine
             autoResetPicks = autoResetPicksCheckBox.Checked;
             playButton.BackColor = Color.OrangeRed;
             disableButtons();
-            draw = (byte)random.Next(0, 255);
+            getSelected();
+            getRandomBits();
             setDrawColors();
             drawIntegerLabel.Text = draw.ToString();
             picksIntegerLabel.Text = picks.ToString();
@@ -95,6 +96,31 @@ namespace The_Lottery_Machine
             else
             {
                 loseScenario();
+            }
+        }
+
+        private void getSelected()
+        {
+            selected = 0;
+            for (int bit = 0; bit < 7; bit++)
+            {
+                if (picks.IsBitSet(bit))
+                {
+                    selected++;
+                }
+            }
+        }
+
+        private void getRandomBits()
+        {
+            for (int i = 0; i < selected; i++)
+            {
+                int bitToChange = random.Next(0, 7);
+                while(draw.IsBitSet(bitToChange))
+                {
+                    bitToChange = random.Next(0, 7);
+                }
+                draw.SetBit(bitToChange);
             }
         }
 
@@ -381,12 +407,34 @@ namespace The_Lottery_Machine
 
             return (byte)(b ^ (1 << pos));
         }
+
         public static bool IsBitSet(this byte b, int pos)
         {
             if (pos < 0 || pos > 7)
                 throw new ArgumentOutOfRangeException("pos", "Index must be in the range of 0-7.");
 
             return (b & (1 << pos)) != 0;
+        }
+
+        public static byte SetBit(this byte b, int pos)
+        {
+            if (pos < 0 || pos > 7)
+                throw new ArgumentOutOfRangeException("pos", "Index must be in the range of 0-7.");
+
+            return (byte)(b | (1 << pos));
+        }
+
+        public static byte UnsetBit(this byte b, int pos)
+        {
+            if (pos < 0 || pos > 7)
+                throw new ArgumentOutOfRangeException("pos", "Index must be in the range of 0-7.");
+
+            return (byte)(b & ~(1 << pos));
+        }
+
+        public static string ToBinaryString(this byte b)
+        {
+            return Convert.ToString(b, 2).PadLeft(8, '0');
         }
     }
 }
