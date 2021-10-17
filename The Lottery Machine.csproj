@@ -50,11 +50,8 @@
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Lila%27s Release|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Lila%27s Version|AnyCPU' ">
     <OutputPath>bin\Lila%27s Release\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Original Version Release|AnyCPU'">
-    <OutputPath>bin\Original Version Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
