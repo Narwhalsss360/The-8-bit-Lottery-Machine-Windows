@@ -113,6 +113,7 @@ namespace The_Lottery_Machine
 
         private void getRandomBits()
         {
+            lastWinLabel.Text = "Executed get";
             for (int i = 0; i < selected; i++)
             {
                 int bitToChange = random.Next(0, 7);
