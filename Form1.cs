@@ -15,6 +15,7 @@ namespace The_Lottery_Machine
         bool soundEnabled = false;
         int timesPlayed = 0;
         int timesWon = 0;
+        int selected;
 
         Random random = new Random();
         DateTime dt = new DateTime();
