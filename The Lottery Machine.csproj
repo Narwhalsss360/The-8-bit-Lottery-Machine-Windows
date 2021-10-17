@@ -101,6 +101,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Changelog.txt" />
     <Content Include="icon.ico" />
     <Content Include="lossSound.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

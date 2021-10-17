@@ -78,24 +78,31 @@ namespace The_Lottery_Machine
 
         private void playButton_Click(object sender, EventArgs e)
         {
-            timesPlayed++;
-            timesPlayedLabel.Text = timesPlayed.ToString();
-            soundEnabled = soundCheckBox.Checked;
-            autoResetPicks = autoResetPicksCheckBox.Checked;
-            playButton.BackColor = Color.OrangeRed;
-            disableButtons();
-            getSelected();
-            getRandomBits();
-            setDrawColors();
-            drawIntegerLabel.Text = draw.ToString();
-            picksIntegerLabel.Text = picks.ToString();
-            if(draw == picks)
+            if(picks != 0)
             {
-                winScenario();
+                timesPlayed++;
+                timesPlayedLabel.Text = timesPlayed.ToString();
+                soundEnabled = soundCheckBox.Checked;
+                autoResetPicks = autoResetPicksCheckBox.Checked;
+                playButton.BackColor = Color.OrangeRed;
+                disableButtons();
+                getSelected();
+                getRandomBits();
+                setDrawColors();
+                drawIntegerLabel.Text = draw.ToString();
+                picksIntegerLabel.Text = picks.ToString();
+                if (draw == picks)
+                {
+                    winScenario();
+                }
+                else
+                {
+                    loseScenario();
+                }
             }
             else
             {
-                loseScenario();
+                noPickCondition();
             }
         }
 
@@ -372,6 +379,14 @@ namespace The_Lottery_Machine
             timesWonLabel.Text = timesWon.ToString();
             soundCheckBox.Checked = soundEnabled;
             autoResetPicksCheckBox.Checked = autoResetPicks;
+        }
+
+        private void noPickCondition()
+        {
+            MessageBoxButtons buttons = MessageBoxButtons.OK;
+            string title = "Pick Something!";
+            string message = "Cannot play with no picks!";
+            MessageBox.Show(message, title, buttons);
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
